@@ -1,5 +1,4 @@
 const mix = require('laravel-mix');
-const path = require('path');
 require('laravel-mix-merge-manifest');
 
 /*
@@ -13,9 +12,7 @@ require('laravel-mix-merge-manifest');
  |
  */
 
-mix.postCss('resources/css/app.css', 'public/css', [
-    //
-]);
+mix.sass('resources/sass/app.scss', 'public/css');
 
 mix.js('resources/js/app.js', 'public/js').extract([
   'jquery',
@@ -24,10 +21,6 @@ mix.js('resources/js/app.js', 'public/js').extract([
   'lodash',
   'axios',
 ]);
-
-mix.alias({
-  '@': path.resolve(__dirname, 'resources/js'),
-});
 
 mix.version();
 mix.mergeManifest();
