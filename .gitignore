@@ -18,3 +18,5 @@ yarn-error.log
 /public/js/*
 /public/.htaccess
 /public/mix-manifest.json
+
+/nbproject
