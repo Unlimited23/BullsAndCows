@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Http\Requests\GuessRequest;
 
 class HomeController extends Controller
 {
@@ -17,11 +17,13 @@ class HomeController extends Controller
     return view('home', compact('secretNumber'));
   }
   
-  public function guess()
+  public function guess(GuessRequest $request)
   {
     $cows = 0;
     $bulls = 0;
     $match = false;
+    $secretNumber = session()->get('secretNumber');
+    $validated = $request->validated();
     
     if (!session()->has('guesses')) {
       session()->put('guesses', 0);
@@ -29,6 +31,17 @@ class HomeController extends Controller
     } else {
       $guesses = session()->get('guesses');
 
+      for ($i = 0; $i < 4; $i++) {
+        for ($j = 0; $j < 4; $j++) {
+          if ($validated['guess'][$i] == $secretNumber->get($j)) {
+            $cows++;
+            if ($i == $j) {
+              $bulls++;
+            }
+          }
+        }
+      }
+      
       session()->put('guesses', ++$guesses);
     }
         

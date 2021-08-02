@@ -17,7 +17,7 @@
                         name="guess"
                         class="form-control"
                         maxlength="4"
-                        pattern="\d{4}"
+                        pattern="^(?!.*(.).*\1)\d{4}$"
                         onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                         placeholder="Insert a four digit number..."
                         required
@@ -29,7 +29,7 @@
                   </form>
                   <div class="border rounded p-3">
                     @if(isset($cows) && isset($bulls))
-                    <span class="text-right">Guesses {{ $guesses }}</span>
+                      <span class="text-right">Guesses {{ $guesses }}</span>
                       <p>You have {{ $cows }} cows.</p>
                       <p>and {{ $bulls }} bulls.</p>
                     @endif
