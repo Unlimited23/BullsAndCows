@@ -44,6 +44,12 @@ class HomeController extends Controller
       
       session()->put('guesses', ++$guesses);
     }
+
+    if ($bulls == 4) {
+      $match = true;
+      session()->put('secretNumber',  $this->generateSecretNumber());
+      session()->put('guesses', 0);
+    }
         
     return view('home', compact('cows', 'bulls', 'guesses'));
   }
