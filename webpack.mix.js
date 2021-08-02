@@ -1,4 +1,5 @@
 const mix = require('laravel-mix');
+const path = require('path');
 require('laravel-mix-merge-manifest');
 
 /*
@@ -14,6 +15,8 @@ require('laravel-mix-merge-manifest');
 
 mix.sass('resources/sass/app.scss', 'public/css');
 
+mix.js('resources/js/home/home.js', 'public/js/home').vue();
+
 mix.js('resources/js/app.js', 'public/js').extract([
   'jquery',
   'popper.js',
@@ -21,6 +24,10 @@ mix.js('resources/js/app.js', 'public/js').extract([
   'lodash',
   'axios',
 ]);
+
+mix.alias({
+  '@': path.resolve(__dirname, 'resources/js'),
+});
 
 mix.version();
 mix.mergeManifest();

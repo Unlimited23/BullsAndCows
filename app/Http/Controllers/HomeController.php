@@ -14,7 +14,9 @@ class HomeController extends Controller
     } else {
       $secretNumber = session()->get('secretNumber');
     }
-    return view('home', compact('secretNumber'));
+    return view('home', [
+      'props' => compact('secretNumber')
+    ]);
   }
   
   public function guess(GuessRequest $request)
@@ -51,7 +53,7 @@ class HomeController extends Controller
       session()->put('guesses', 0);
     }
         
-    return view('home', compact('cows', 'bulls', 'guesses'));
+    return view('home', ['props' => compact('cows', 'bulls', 'guesses')]);
   }
   
   public function generateSecretNumber()
