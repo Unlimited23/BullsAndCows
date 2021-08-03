@@ -6,13 +6,18 @@
                   <div class="card-header">Playground</div>
 
                   <div class="card-body">
-                    <form action="/guess" method="post">
-                      <CsrfToken />
+                      <div v-if="match" class="alert alert-success">
+                        You have successfully guessed the secret number!
+                      </div>
+                      <div v-if="error" class="alert alert-danger">
+                        {{ error }}
+                      </div>
                       <div class="input-group mb-3">
                         <input 
                           type="text"
                           id="guess"
                           name="guess"
+                          ref="guess"
                           class="form-control"
                           maxlength="4"
                           pattern="^(?!.*(.).*\1)\d{4}$"
@@ -20,16 +25,22 @@
                           placeholder="Insert a four digit number..."
                           required
                         />
-                        <button type="submit" class="btn btn-outline-secondary btn-lg">
+                        <button 
+                          type="button"
+                          class="btn btn-outline-secondary btn-lg"
+                          @click="guess()"
+                        >
                           Guess!
                         </button>
                       </div>
-                    </form>
                     <div class="border rounded p-3">
-                        <span class="text-right">Guesses {{ guesses }}</span>
-                        <p>You have {{ cows }} cows.</p>
-                        <p>and {{ bulls }} bulls.</p>
+                        <p>
+                          <span class="text-success ml-1 mr-1">{{ cows }}</span> cows
+                          <span class="text-danger ml-1 mr-1">{{ bulls }}</span> bulls
+                        </p>
+                        <p><span class="text-right">Guesses: {{ guesses }}</span></p>
                     </div>
+                    <numbers-table :numbers="numbers" />
                   </div>
               </div>
           </div>
@@ -40,18 +51,33 @@
 <script>
   import type from '@/helpers/type';
   import CsrfToken from '@/helpers/CsrfToken';
+  import NumbersTable from './NumbersTable';
   
   export default {
     components: {
-      CsrfToken
+      CsrfToken,
+      NumbersTable,
     },
-    props: {
-      cows: type.number(),
-      bulls: type.number(),
-      guesses: type.number(),
+    data: function() {
+      return {
+        cows: 0,
+        bulls: 0,
+        guesses: 0,
+        numbers: {},
+        match: false,
+        error: '',
+      };
     },
-    mounted() {
-
-    }
+    methods: {
+      async guess() {
+        const resp = (await axios.post('/guess', {guess: this.$refs.guess.value})).data;
+        this.cows = resp.cows;
+        this.bulls = resp.bulls;
+        this.guesses = resp.guesses;
+        this.numbers = resp.numbers;
+        this.match = resp.match;
+        this.error = resp.error ?? '';
+      }
+    },
   }
 </script>

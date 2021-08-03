@@ -14,7 +14,7 @@ class GuessRequest extends FormRequest
   public function rules()
   {
     return [
-      'guess' => 'required|int'
+      'guess' => 'required'
     ];
   }
 }

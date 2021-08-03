@@ -26,37 +26,20 @@ class HomeController extends Controller
     $match = false;
     $secretNumber = session()->get('secretNumber');
     $validated = $request->validated();
+
+    if (collect(session()->get('numbers'))->has($validated['guess'])) {
+      return response()->json(['error' => 'You have already tried this number!']);
+    }
     
-    if (!session()->has('guesses')) {
-      session()->put('guesses', 0);
-      $guesses = 0;
-    } else {
-      $guesses = session()->get('guesses');
-
-      for ($i = 0; $i < 4; $i++) {
-        for ($j = 0; $j < 4; $j++) {
-          if ($validated['guess'][$i] == $secretNumber->get($j)) {
-            $cows++;
-            if ($i == $j) {
-              $bulls++;
-            }
-          }
-        }
-      }
-      
-      session()->put('guesses', ++$guesses);
-    }
-
-    if ($bulls == 4) {
-      $match = true;
-      session()->put('secretNumber',  $this->generateSecretNumber());
-      session()->put('guesses', 0);
-    }
-        
-    return view('home', ['props' => compact('cows', 'bulls', 'guesses')]);
+    [$cows, $bulls, $guesses] = [...$this->findBullsAndCows($validated, $secretNumber, $cows, $bulls)];
+    $numbers = $this->storeNumbers($validated, $cows, $bulls);
+    $match = $this->checkForMatch($bulls, $match);
+    
+    
+    return response()->json(compact('cows', 'bulls', 'guesses', 'numbers', 'match'));
   }
   
-  public function generateSecretNumber()
+  private function generateSecretNumber(): iterable
   {
     $secretNumber = collect();
     while ($secretNumber->count() < 4) {
@@ -66,5 +49,53 @@ class HomeController extends Controller
         }
     }
     return $secretNumber;
+  }
+  
+  private function findBullsAndCows($validated, $secretNumber, $cows, $bulls): array
+  {
+    $number = clone $secretNumber;
+
+    if (!session()->has('guesses')) {
+      $guesses = 1;
+      session()->put('guesses', $guesses);
+    } else {
+      $guesses = session()->get('guesses');
+
+      for ($i = 0; $i < 4; $i++) {
+        for ($j = 0; $j < 4; $j++) {
+          if ($secretNumber->get($i) == $validated['guess'][$j]) {
+            $cows++;
+            if ($i == $j) {
+              $bulls++;
+            }
+            $secretNumber->pull($i);
+            $secretNumber->put($i, -1);
+          }
+        }
+      }
+      
+      session()->put('guesses', ++$guesses);
+    }
+    
+    return [$cows, $bulls, $guesses];
+  }
+  
+  private function checkForMatch($bulls, $match): bool
+  {
+    if ($bulls == 4) {
+      $match = true;
+      session()->flush();
+    }
+    
+    return $match;
+  }
+  
+  private function storeNumbers($validated, $cows, $bulls): array
+  {
+    $numbers = session()->get('numbers');
+    $numbers = collect($numbers)->put($validated['guess'], compact('cows', 'bulls'))->toArray();
+    session()->put('numbers', $numbers);
+    
+    return $numbers;
   }
 }
