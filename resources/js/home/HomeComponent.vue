@@ -52,7 +52,7 @@
   import type from '@/helpers/type';
   import CsrfToken from '@/helpers/CsrfToken';
   import NumbersTable from './NumbersTable';
-  
+
   export default {
     components: {
       CsrfToken,
@@ -71,12 +71,19 @@
     methods: {
       async guess() {
         const resp = (await axios.post('/guess', {guess: this.$refs.guess.value})).data;
+        if (resp?.error) {
+          this.error = resp.error ?? '';
+          return;
+        }
         this.cows = resp.cows;
         this.bulls = resp.bulls;
         this.guesses = resp.guesses;
         this.numbers = resp.numbers;
         this.match = resp.match;
-        this.error = resp.error ?? '';
+        
+        if (this.match) {
+          setTimeout(() => location.reload(), 3000);
+        }
       }
     },
   }

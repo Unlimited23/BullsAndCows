@@ -44,10 +44,26 @@ class HomeController extends Controller
     $secretNumber = collect();
     while ($secretNumber->count() < 4) {
         $randomNumber = mt_rand(0, 9);
-        if ($secretNumber->search($randomNumber) === false || $secretNumber->count() == 0) {
+        $count = $secretNumber->count();
+        $notEvenIndex = ($count != 0 && $count != 2);
+
+        if ($secretNumber->isNotEmpty() && $secretNumber->search($randomNumber) === false) {
+          if (($randomNumber == 4 || $randomNumber == 5) && $notEvenIndex) {
             $secretNumber->push($randomNumber);
+          } else if ($randomNumber != 4 && $randomNumber != 5) {
+            $secretNumber->push($randomNumber);
+          }
+        } else if($secretNumber->isEmpty()) {
+          if (($randomNumber == 4 || $randomNumber == 5) && $notEvenIndex) {
+            $secretNumber->push($randomNumber);
+          } else if ($randomNumber != 4 && $randomNumber != 5) {
+            $secretNumber->push($randomNumber);
+          }
         }
     }
+
+    $this->checkForOneAndEight($secretNumber);
+
     return $secretNumber;
   }
   
@@ -56,27 +72,26 @@ class HomeController extends Controller
     $number = clone $secretNumber;
 
     if (!session()->has('guesses')) {
-      $guesses = 1;
-      session()->put('guesses', $guesses);
-    } else {
-      $guesses = session()->get('guesses');
+      session()->put('guesses', 1);
+    }
 
-      for ($i = 0; $i < 4; $i++) {
-        for ($j = 0; $j < 4; $j++) {
-          if ($secretNumber->get($i) == $validated['guess'][$j]) {
-            $cows++;
-            if ($i == $j) {
-              $bulls++;
-            }
-            $secretNumber->pull($i);
-            $secretNumber->put($i, -1);
+    $guesses = session()->get('guesses');
+
+    for ($i = 0; $i < 4; $i++) {
+      for ($j = 0; $j < 4; $j++) {
+        if ($number->get($i) == $validated['guess'][$j]) {
+          $cows++;
+          if ($i == $j) {
+            $bulls++;
           }
+          $number->pull($i);
+          $number->put($i, -1);
         }
       }
-      
-      session()->put('guesses', ++$guesses);
     }
-    
+
+    session()->put('guesses', ++$guesses);
+
     return [$cows, $bulls, $guesses];
   }
   
@@ -97,5 +112,42 @@ class HomeController extends Controller
     session()->put('numbers', $numbers);
     
     return $numbers;
+  }
+  
+  private function checkForOneAndEight($secretNumber)
+  {
+    $idxOne = $secretNumber->search(1);
+    $idxEight = $secretNumber->search(8);
+
+    // Check if one and eight exist in the number and if they're not already next to each other
+    if ($idxOne !== false && $idxEight !== false &&
+      ((abs($idxOne - $idxEight) !== 1) || (abs($idxEight - $idxOne) !== 1))
+    ) {
+      foreach ($secretNumber as $k => $num) {
+        if ($k === $idxOne) {
+          $key = $idxOne < 3 ? $idxOne + 1 : $idxOne - 1;
+          // retrieve the sibling number
+          $next = $secretNumber->get($key);
+          // replace it with the "eight"
+          $secretNumber->put($key, $secretNumber->get($idxEight));
+          // remove the "eight"
+          $secretNumber->forget($idxEight);
+          // restore the sibling number
+          $secretNumber->push($next);
+          break;
+        } else if ($k == $idxEight) {
+          $key = $idxEight < 3 ? $idxEight + 1 : $idxEight - 1;
+          // retrieve the sibling number
+          $next = $secretNumber->get($key);
+          // replace it with the "one"
+          $secretNumber->put($key, $secretNumber->get($idxOne));
+          // remove the "one"
+          $secretNumber->forget($idxOne);
+          // restore the sibling number
+          $secretNumber->push($next);
+          break;
+        }
+      }
+    }
   }
 }
