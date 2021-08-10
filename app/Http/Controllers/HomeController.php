@@ -9,16 +9,13 @@ class HomeController extends Controller
   public function index()
   {
     if (!session()->has('secretNumber')) {
-      $secretNumber = $this->generateSecretNumber();
-      session()->put('secretNumber', $secretNumber);
-    } else {
-      $secretNumber = session()->get('secretNumber');
+      session()->put('secretNumber', $this->generateSecretNumber());
     }
 
     $nums = session()->has('numbers') ? session()->get('numbers') : [];
 
     return view('home', [
-      'props' => compact('secretNumber', 'nums')
+      'props' => compact('nums')
     ]);
   }
   
@@ -46,6 +43,12 @@ class HomeController extends Controller
     return view('top-ten', [
       'records' => session()->get('topTen') ?? []
     ]);
+  }
+  
+  public function reset()
+  {
+    session()->flush();
+    return redirect()->action([self::class, 'index']);
   }
   
   private function generateSecretNumber(): iterable

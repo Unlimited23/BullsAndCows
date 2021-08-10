@@ -27,6 +27,9 @@
                 <a class="navbar-brand text-left" href="{{ url('/top-ten') }}">
                     Top Ten List
                 </a>
+                <a class="navbar-brand text-left btn btn-warning" href="{{ url('/reset') }}">
+                    Reset
+                </a>
                 <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                     <span class="navbar-toggler-icon"></span>
                 </button>

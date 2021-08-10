@@ -17,3 +17,4 @@ use App\Http\Controllers\HomeController;
 Route::get('/', [HomeController::class, 'index']);
 Route::post('/guess', [HomeController::class, 'guess']);
 Route::get('/top-ten', [HomeController::class, 'topTen']);
+Route::get('/reset', [HomeController::class, 'reset']);
