@@ -58,6 +58,7 @@
       CsrfToken,
       NumbersTable,
     },
+    props: ['nums'],
     data: function() {
       return {
         cows: 0,
@@ -86,5 +87,8 @@
         }
       }
     },
+    mounted() {
+      this.numbers = {...this.nums};
+    }
   }
 </script>

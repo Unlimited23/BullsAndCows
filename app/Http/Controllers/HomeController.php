@@ -14,8 +14,11 @@ class HomeController extends Controller
     } else {
       $secretNumber = session()->get('secretNumber');
     }
+
+    $nums = session()->has('numbers') ? session()->get('numbers') : [];
+
     return view('home', [
-      'props' => compact('secretNumber')
+      'props' => compact('secretNumber', 'nums')
     ]);
   }
   
@@ -33,9 +36,8 @@ class HomeController extends Controller
     
     [$cows, $bulls, $guesses] = [...$this->findBullsAndCows($validated, $secretNumber, $cows, $bulls)];
     $numbers = $this->storeNumbers($validated, $cows, $bulls);
-    $match = $this->checkForMatch($bulls, $match);
-    
-    
+    $match = $this->checkForMatch($bulls, $match, $secretNumber);
+
     return response()->json(compact('cows', 'bulls', 'guesses', 'numbers', 'match'));
   }
   
@@ -72,7 +74,7 @@ class HomeController extends Controller
     $number = clone $secretNumber;
 
     if (!session()->has('guesses')) {
-      session()->put('guesses', 1);
+      session()->put('guesses', 0);
     }
 
     $guesses = session()->get('guesses');
@@ -95,11 +97,16 @@ class HomeController extends Controller
     return [$cows, $bulls, $guesses];
   }
   
-  private function checkForMatch($bulls, $match): bool
+  private function checkForMatch($bulls, $match, $secretNumber): bool
   {
     if ($bulls == 4) {
       $match = true;
+      $top10 = session()->get('topTen') ?? [];
+      $guesses = session()->get('guesses');
+      
       session()->flush();
+      session()->put('topTen', $top10);
+      session()->push('topTen', [$secretNumber->join('') => $guesses]);
     }
     
     return $match;

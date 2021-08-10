@@ -1,5 +1,5 @@
 <template>
-  <div class="table-responsive">
+  <div class="table-responsive" v-if="!emptyNumbers">
     <table class="table table-hover">
       <thead>
         <tr>
@@ -9,7 +9,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(guess, number) in numbers">
+        <tr v-for="(guess, number) in numbers" :key="number">
           <td>{{ number }}</td>
           <td>{{ guess.cows }}</td>
           <td>{{ guess.bulls }}</td>
@@ -25,6 +25,11 @@
   export default {
     props: {
       numbers: type.object(),
+    },
+    computed: {
+      emptyNumbers() {
+        return Object.keys(this.numbers).length == 0;
+      }
     }
   }
   
