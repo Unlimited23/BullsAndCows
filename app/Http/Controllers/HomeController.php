@@ -41,6 +41,13 @@ class HomeController extends Controller
     return response()->json(compact('cows', 'bulls', 'guesses', 'numbers', 'match'));
   }
   
+  public function topTen()
+  {
+    return view('top-ten', [
+      'records' => session()->get('topTen') ?? []
+    ]);
+  }
+  
   private function generateSecretNumber(): iterable
   {
     $secretNumber = collect();
@@ -66,7 +73,7 @@ class HomeController extends Controller
 
     $this->checkForOneAndEight($secretNumber);
 
-    return $secretNumber;
+    return collect($secretNumber)->values();
   }
   
   private function findBullsAndCows($validated, $secretNumber, $cows, $bulls): array
@@ -101,14 +108,23 @@ class HomeController extends Controller
   {
     if ($bulls == 4) {
       $match = true;
-      $top10 = session()->get('topTen') ?? [];
+      $top10 = collect(session()->get('topTen') ?? [])->sort();
       $guesses = session()->get('guesses');
+      $lastGuess = collect($top10)->values()->last() ?? PHP_INT_MAX;
       
       session()->flush();
-      session()->put('topTen', $top10);
-      session()->push('topTen', [$secretNumber->join('') => $guesses]);
+      
+      if ($guesses <= $lastGuess || $top10->count() < 10) {
+        $top10->prepend($guesses, $secretNumber->join(''))->sort();
+      }
+      
+      if ($top10->count() > 10) {
+        $top10->pop();
+      }
+
+      session()->put('topTen', $top10->sort()->toArray());
     }
-    
+
     return $match;
   }
   
