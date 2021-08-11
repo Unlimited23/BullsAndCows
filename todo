@@ -1,0 +1,6 @@
+Backend validation for input.
+Make sure a unique number is inserted (hint: 0000 is possible now).
+Add timer.
+Add username.
+Make max number of guesses (e.g. 10)
+Improve design.
