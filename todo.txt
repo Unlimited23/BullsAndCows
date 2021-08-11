@@ -3,4 +3,6 @@ Make sure a unique number is inserted (hint: 0000 is possible now).
 Add timer.
 Add username.
 Make max number of guesses (e.g. 10)
+Refactor variables positions.
+Add sorting to table.
 Improve design.
